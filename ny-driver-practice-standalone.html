@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NY Driver Practice</title>
+    <style>
+      :root {
+        --ink: #15191f;
+        --muted: #59616d;
+        --line: #d9dde4;
+        --road: #29313b;
+        --signal: #f6c944;
+        --go: #197a54;
+        --stop: #b73535;
+        --paper: #f7f8f5;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        color: var(--ink);
+        background: linear-gradient(180deg, #dceefa, var(--paper) 42%);
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .app-shell {
+        width: min(1060px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 22px 0 34px;
+      }
+
+      .hero {
+        min-height: 220px;
+        display: flex;
+        align-items: end;
+        border-radius: 8px;
+        padding: clamp(22px, 5vw, 48px);
+        color: white;
+        background:
+          linear-gradient(90deg, rgba(21, 25, 31, 0.88), rgba(21, 25, 31, 0.34)),
+          url("assets/ny-driver-practice-banner.png") center / cover,
+          var(--road);
+      }
+
+      .eyebrow {
+        margin: 0;
+        color: var(--signal);
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 8px 0 8px;
+        font-size: clamp(2.4rem, 6vw, 4.6rem);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+
+      .hero p:last-child {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.05rem;
+      }
+
+      .practice-layout {
+        display: grid;
+        grid-template-columns: minmax(230px, 280px) minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+        margin-top: 18px;
+      }
+
+      .status-panel,
+      .question-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 18px 50px rgba(41, 49, 59, 0.1);
+      }
+
+      .status-panel {
+        display: grid;
+        gap: 20px;
+        padding: 18px;
+      }
+
+      .panel-label,
+      .meter {
+        margin: 0;
+        font-size: 0.78rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .panel-label {
+        color: var(--muted);
+      }
+
+      .progress-track {
+        height: 10px;
+        margin: 10px 0 8px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #e8ecf1;
+      }
+
+      .progress-fill {
+        width: 0;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--go);
+        transition: width 220ms ease;
+      }
+
+      .score-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .score-grid div {
+        min-height: 84px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfcfd;
+      }
+
+      .score-grid span {
+        display: block;
+        font-size: 2rem;
+        font-weight: 850;
+        line-height: 1;
+      }
+
+      .score-grid p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .question-card {
+        min-height: 420px;
+        padding: clamp(18px, 3vw, 30px);
+      }
+
+      .question-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+
+      .question-meta span {
+        display: inline-flex;
+        min-height: 30px;
+        align-items: center;
+        padding: 5px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--muted);
+        background: #f8fafb;
+        font-size: 0.84rem;
+        font-weight: 720;
+      }
+
+      h2 {
+        max-width: 770px;
+        margin: 0 0 22px;
+        font-size: clamp(1.45rem, 3vw, 2.25rem);
+        line-height: 1.16;
+        letter-spacing: 0;
+      }
+
+      .choices {
+        display: grid;
+        gap: 12px;
+      }
+
+      .choice {
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+        width: 100%;
+        min-height: 66px;
+        padding: 12px 14px;
+        border: 2px solid var(--line);
+        border-radius: 8px;
+        color: var(--ink);
+        background: #fff;
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .choice:disabled {
+        cursor: default;
+      }
+
+      .choice__key {
+        display: inline-grid;
+        width: 36px;
+        height: 36px;
+        place-items: center;
+        border-radius: 50%;
+        color: #fff;
+        background: var(--road);
+        font-weight: 850;
+      }
+
+      .choice__text {
+        overflow-wrap: anywhere;
+        font-weight: 720;
+      }
+
+      .choice.is-correct {
+        border-color: var(--go);
+        background: #eef8f3;
+      }
+
+      .choice.is-correct .choice__key {
+        background: var(--go);
+      }
+
+      .choice.is-wrong {
+        border-color: var(--stop);
+        background: #fff1f0;
+      }
+
+      .choice.is-wrong .choice__key {
+        background: var(--stop);
+      }
+
+      .feedback {
+        margin-top: 18px;
+        padding: 16px;
+        border-left: 5px solid var(--go);
+        border-radius: 8px;
+        background: #f3f8f5;
+      }
+
+      .feedback.is-wrong {
+        border-left-color: var(--stop);
+        background: #fff5f3;
+      }
+
+      .feedback p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .feedback__title {
+        margin-bottom: 4px;
+        color: var(--ink);
+        font-weight: 850;
+      }
+
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 22px;
+      }
+
+      .button {
+        min-height: 44px;
+        min-width: 112px;
+        padding: 10px 16px;
+        border: 0;
+        border-radius: 8px;
+        color: #fff;
+        background: var(--road);
+        font-weight: 850;
+        cursor: pointer;
+      }
+
+      .button:disabled {
+        cursor: not-allowed;
+        opacity: 0.42;
+      }
+
+      .button--secondary {
+        width: 100%;
+        border: 1px solid var(--line);
+        color: var(--ink);
+        background: #fff;
+      }
+
+      @media (max-width: 760px) {
+        .practice-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero" aria-label="NY Driver Practice">
+        <div>
+          <p class="eyebrow">Version 1.0</p>
+          <h1>NY Driver Practice</h1>
+          <p>Focused permit-style review for New York road rules.</p>
+        </div>
+      </section>
+
+      <section class="practice-layout" aria-label="Practice quiz">
+        <aside class="status-panel">
+          <div>
+            <p class="panel-label">Progress</p>
+            <div class="progress-track" aria-hidden="true">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p class="meter" id="progressText">Question 1 of 11</p>
+          </div>
+
+          <div class="score-grid" aria-label="Quiz score">
+            <div>
+              <span id="correctCount">0</span>
+              <p>Correct</p>
+            </div>
+            <div>
+              <span id="missedCount">0</span>
+              <p>Missed</p>
+            </div>
+          </div>
+
+          <button class="button button--secondary" id="restartButton" type="button">Restart</button>
+        </aside>
+
+        <section class="question-card" aria-live="polite">
+          <div class="question-meta">
+            <span id="chapterLabel"></span>
+            <span id="topicLabel"></span>
+            <span id="difficultyLabel"></span>
+          </div>
+
+          <h2 id="questionText"></h2>
+          <div class="choices" id="choices" role="list"></div>
+
+          <div class="feedback" id="feedback" hidden>
+            <p class="feedback__title" id="feedbackTitle"></p>
+            <p id="feedbackText"></p>
+          </div>
+
+          <div class="actions">
+            <button class="button" id="nextButton" type="button" disabled>Next</button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const appData = {
+        appName: "NY Driver Practice",
+        version: "1.0",
+        questions: [
+          {
+            id: 1,
+            chapter: "Driver Licenses",
+            topic: "License Requirements",
+            difficulty: "Easy",
+            question: "What must you have to legally drive in New York State?",
+            choices: [
+              "A valid driver license",
+              "A school ID",
+              "A passport",
+              "A vehicle title"
+            ],
+            correctAnswer: 0,
+            explanation: "New York law requires a valid driver license to operate a motor vehicle."
+          },
+          {
+            id: 2,
+            chapter: "Traffic Control",
+            topic: "Stop Signs",
+            source: "mv21.pdf",
+            difficulty: "Easy",
+            question: "At a stop sign with a stop line, where must you stop?",
+            choices: [
+              "Before reaching the stop line",
+              "In the middle of the crosswalk",
+              "After entering the intersection",
+              "Only after other drivers honk"
+            ],
+            correctAnswer: 0,
+            explanation: "At a stop sign, stop before the stop line. If there is no stop line, stop before the crosswalk or before entering the intersection."
+          },
+          {
+            id: 3,
+            chapter: "Traffic Control",
+            topic: "Traffic Signals",
+            source: "mv21.pdf",
+            difficulty: "Easy",
+            question: "What does a flashing red traffic light mean?",
+            choices: [
+              "Slow down but keep moving",
+              "Stop, yield, and go when it is safe",
+              "The lane is closed ahead",
+              "Only buses must stop"
+            ],
+            correctAnswer: 1,
+            explanation: "A flashing red light is treated like a stop sign: stop, yield the right-of-way, and continue only when it is safe."
+          },
+          {
+            id: 4,
+            chapter: "Traffic Control",
+            topic: "Pavement Markings",
+            source: "mv21.pdf",
+            difficulty: "Medium",
+            question: "What do double solid lines between lanes usually mean?",
+            choices: [
+              "Passing is encouraged",
+              "Only trucks may cross them",
+              "You cannot pass or change lanes across them",
+              "You may cross them anytime at night"
+            ],
+            correctAnswer: 2,
+            explanation: "Double solid lines generally mean you may not pass or change lanes across them, except for allowed left turns into or out of a highway."
+          },
+          {
+            id: 5,
+            chapter: "Intersections and Turns",
+            topic: "Right-of-Way",
+            source: "mv21.pdf",
+            difficulty: "Medium",
+            question: "At an uncontrolled intersection, two drivers arrive at right angles at the same time. Who must yield?",
+            choices: [
+              "The driver on the right",
+              "The driver on the left",
+              "The driver going straight",
+              "The driver with the newer vehicle"
+            ],
+            correctAnswer: 1,
+            explanation: "When drivers reach an uncontrolled intersection at the same time from right angles, the driver on the left must yield to the driver on the right."
+          },
+          {
+            id: 6,
+            chapter: "Intersections and Turns",
+            topic: "Crosswalks",
+            source: "mv21.pdf",
+            difficulty: "Easy",
+            question: "What must drivers do for pedestrians legally using a crosswalk?",
+            choices: [
+              "Speed up to clear the intersection",
+              "Yield and slow down or stop if needed",
+              "Honk so the pedestrian moves faster",
+              "Yield only if the crosswalk is painted"
+            ],
+            correctAnswer: 1,
+            explanation: "Drivers must yield to pedestrians legally using marked or unmarked crosswalks and must slow down or stop when necessary."
+          },
+          {
+            id: 7,
+            chapter: "Passing",
+            topic: "Lane Changes",
+            source: "mv21.pdf",
+            difficulty: "Medium",
+            question: "Before changing lanes to pass another vehicle, what should you do?",
+            choices: [
+              "Signal, check mirrors, and look over your shoulder",
+              "Flash your headlights only",
+              "Move quickly before checking traffic",
+              "Rely only on your rear-view mirror"
+            ],
+            correctAnswer: 0,
+            explanation: "Before passing or changing lanes, signal, check your mirrors, and look over your shoulder because mirrors can leave blind spots."
+          },
+          {
+            id: 8,
+            chapter: "Passing",
+            topic: "School Buses",
+            source: "mv21.pdf",
+            difficulty: "Easy",
+            question: "When a stopped school bus flashes red lights, what must traffic approaching from either direction do?",
+            choices: [
+              "Pass slowly if no children are visible",
+              "Stop before reaching the bus",
+              "Stop only behind the bus",
+              "Continue if the road is divided"
+            ],
+            correctAnswer: 1,
+            explanation: "Traffic approaching from either direction must stop for a school bus with flashing red lights, including on divided highways in New York State."
+          },
+          {
+            id: 9,
+            chapter: "Defensive Driving",
+            topic: "Following Distance",
+            source: "mv21.pdf",
+            difficulty: "Easy",
+            question: "What rule can help you keep a safe space cushion behind another vehicle?",
+            choices: [
+              "The two-second rule",
+              "The five-mile rule",
+              "The horn-before-braking rule",
+              "The left-lane rule"
+            ],
+            correctAnswer: 0,
+            explanation: "Use the two-second rule in normal conditions, and increase the count in bad weather or when following large trucks."
+          },
+          {
+            id: 10,
+            chapter: "Alcohol and Other Drugs",
+            topic: "Impaired Driving",
+            source: "mv21.pdf",
+            difficulty: "Medium",
+            question: "How can alcohol affect your driving?",
+            choices: [
+              "It improves night vision",
+              "It reduces reaction time and judgment",
+              "It makes speed easier to judge",
+              "It prevents glare from headlights"
+            ],
+            correctAnswer: 1,
+            explanation: "Alcohol can slow reaction time, reduce clear vision, and weaken judgment about speed, distance, and safe decisions."
+          },
+          {
+            id: 11,
+            chapter: "Special Driving Conditions",
+            topic: "Railroad Crossings",
+            source: "mv21.pdf",
+            difficulty: "Medium",
+            question: "At a railroad crossing with flashing red lights or lowered gates, when may you proceed?",
+            choices: [
+              "As soon as the train passes your lane",
+              "When the lights stop and gates are completely raised",
+              "After waiting exactly 10 seconds",
+              "When the vehicle behind you starts moving"
+            ],
+            correctAnswer: 1,
+            explanation: "Do not cross until the warning lights and bell have stopped and the gates are completely raised."
+          }
+        ]
+      };
+
+      const state = {
+        currentIndex: 0,
+        selectedChoice: null,
+        correct: 0,
+        missed: 0,
+        answeredIds: new Set()
+      };
+
+      const els = {
+        progressFill: document.querySelector("#progressFill"),
+        progressText: document.querySelector("#progressText"),
+        correctCount: document.querySelector("#correctCount"),
+        missedCount: document.querySelector("#missedCount"),
+        restartButton: document.querySelector("#restartButton"),
+        chapterLabel: document.querySelector("#chapterLabel"),
+        topicLabel: document.querySelector("#topicLabel"),
+        difficultyLabel: document.querySelector("#difficultyLabel"),
+        questionText: document.querySelector("#questionText"),
+        choices: document.querySelector("#choices"),
+        feedback: document.querySelector("#feedback"),
+        feedbackTitle: document.querySelector("#feedbackTitle"),
+        feedbackText: document.querySelector("#feedbackText"),
+        nextButton: document.querySelector("#nextButton")
+      };
+
+      function currentQuestion() {
+        return appData.questions[state.currentIndex];
+      }
+
+      function renderQuestion() {
+        const question = currentQuestion();
+        const total = appData.questions.length;
+        const questionNumber = state.currentIndex + 1;
+
+        state.selectedChoice = null;
+        els.chapterLabel.textContent = question.chapter;
+        els.topicLabel.textContent = question.topic;
+        els.difficultyLabel.textContent = question.difficulty;
+        els.questionText.textContent = question.question;
+        els.progressText.textContent = `Question ${questionNumber} of ${total}`;
+        els.progressFill.style.width = `${((questionNumber - 1) / total) * 100}%`;
+        els.nextButton.disabled = true;
+        els.nextButton.textContent = questionNumber === total ? "Finish" : "Next";
+        els.feedback.hidden = true;
+        els.feedback.classList.remove("is-wrong");
+
+        els.choices.innerHTML = "";
+        question.choices.forEach((choice, index) => {
+          const button = document.createElement("button");
+          button.className = "choice";
+          button.type = "button";
+          button.dataset.index = String(index);
+          button.innerHTML = `
+            <span class="choice__key">${String.fromCharCode(65 + index)}</span>
+            <span class="choice__text"></span>
+          `;
+          button.querySelector(".choice__text").textContent = choice;
+          button.addEventListener("click", () => selectAnswer(index));
+          els.choices.append(button);
+        });
+      }
+
+      function selectAnswer(index) {
+        const question = currentQuestion();
+        const isCorrect = index === question.correctAnswer;
+        const questionAlreadyAnswered = state.answeredIds.has(question.id);
+
+        state.selectedChoice = index;
+        if (!questionAlreadyAnswered) {
+          state.answeredIds.add(question.id);
+          if (isCorrect) {
+            state.correct += 1;
+          } else {
+            state.missed += 1;
+          }
+        }
+
+        Array.from(els.choices.children).forEach((button) => {
+          const choiceIndex = Number(button.dataset.index);
+          button.disabled = true;
+          if (choiceIndex === question.correctAnswer) {
+            button.classList.add("is-correct");
+          }
+          if (choiceIndex === index && !isCorrect) {
+            button.classList.add("is-wrong");
+          }
+        });
+
+        els.correctCount.textContent = String(state.correct);
+        els.missedCount.textContent = String(state.missed);
+        els.feedbackTitle.textContent = isCorrect ? "Correct" : "Review this one";
+        els.feedbackText.textContent = question.explanation;
+        els.feedback.classList.toggle("is-wrong", !isCorrect);
+        els.feedback.hidden = false;
+        els.nextButton.disabled = false;
+        els.progressFill.style.width = `${((state.currentIndex + 1) / appData.questions.length) * 100}%`;
+      }
+
+      function advance() {
+        if (state.currentIndex < appData.questions.length - 1) {
+          state.currentIndex += 1;
+          renderQuestion();
+          return;
+        }
+
+        els.nextButton.disabled = true;
+        els.nextButton.textContent = "Complete";
+        els.progressText.textContent = `Completed ${appData.questions.length} of ${appData.questions.length}`;
+      }
+
+      function restart() {
+        state.currentIndex = 0;
+        state.selectedChoice = null;
+        state.correct = 0;
+        state.missed = 0;
+        state.answeredIds.clear();
+        els.correctCount.textContent = "0";
+        els.missedCount.textContent = "0";
+        renderQuestion();
+      }
+
+      els.nextButton.addEventListener("click", advance);
+      els.restartButton.addEventListener("click", restart);
+
+      renderQuestion();
+    </script>
+  </body>
+</html>

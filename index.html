@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NY Driver Practice</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero" aria-label="NY Driver Practice">
+        <img
+          class="hero__image"
+          src="assets/ny-driver-practice-banner.png"
+          alt="View from a car dashboard at a city intersection"
+        >
+        <div class="hero__shade"></div>
+        <div class="hero__content">
+          <p class="eyebrow">Version 1.0</p>
+          <h1>NY Driver Practice</h1>
+          <p class="hero__copy">Focused permit-style review for New York road rules.</p>
+        </div>
+      </section>
+
+      <section class="practice-layout" aria-label="Practice quiz">
+        <aside class="status-panel">
+          <div>
+            <p class="panel-label">Progress</p>
+            <div class="progress-track" aria-hidden="true">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p class="meter" id="progressText">Question 1 of 1</p>
+          </div>
+
+          <div class="score-grid" aria-label="Quiz score">
+            <div>
+              <span id="correctCount">0</span>
+              <p>Correct</p>
+            </div>
+            <div>
+              <span id="missedCount">0</span>
+              <p>Missed</p>
+            </div>
+          </div>
+
+          <button class="button button--secondary" id="restartButton" type="button">
+            Restart
+          </button>
+        </aside>
+
+        <section class="question-card" aria-live="polite">
+          <div class="question-meta">
+            <span id="chapterLabel">Driver Licenses</span>
+            <span id="topicLabel">License Requirements</span>
+            <span id="difficultyLabel">Easy</span>
+          </div>
+
+          <h2 id="questionText">What must you have to legally drive in New York State?</h2>
+
+          <div class="choices" id="choices" role="list"></div>
+
+          <div class="feedback" id="feedback" hidden>
+            <p class="feedback__title" id="feedbackTitle"></p>
+            <p id="feedbackText"></p>
+          </div>
+
+          <div class="actions">
+            <button class="button" id="nextButton" type="button" disabled>
+              Next
+            </button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
